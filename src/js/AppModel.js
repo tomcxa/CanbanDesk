@@ -4,7 +4,6 @@ import Event from './Event';
 export default class AppModel {
     constructor() {
         this._columns = [];
-        // this.readLocalMemoryEvent = new Event();
         this.addColumnEvent = new Event();
         this.removeColumnEvent = new Event();
         this.addItemEvent = new Event();

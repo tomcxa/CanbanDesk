@@ -1,5 +1,5 @@
 /* eslint-disable object-curly-newline */
-import Forms from '../Forms';
+import Forms from './Forms';
 
 export default class Presenter {
     constructor(view, model) {
@@ -65,12 +65,6 @@ export default class Presenter {
     }
 
     dropHandler(event) {
-        // if (event.type === 'mousedown'
-        //     && event.target.classList.contains('card')) {
-        //     // const closest = document.elementFromPoint(event.clientX, event.clientY);
-        //     console.log('mousedown');
-        // };
-
         if (event.type === 'mouseup' && event.target.closest('.card')) {
             const data = this.view.drake.dataForModel;
             const { item, target, source, currentSibling } = data;

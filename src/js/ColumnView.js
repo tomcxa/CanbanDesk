@@ -1,14 +1,11 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-underscore-dangle */
 import dragula from 'dragula/dragula';
-// import dnd from './draganddrop';
 
 export default class ColumnView {
     constructor(container) {
         this.container = container;
         this.drake = dragula({ revertOnSpill: true });
-        // this.columns = columns;
-        // this.init();
     }
 
     init(columns = [], handler, dndHandler) {
@@ -106,11 +103,6 @@ export default class ColumnView {
         cardEl.remove();
     }
 
-    // addColumn(column, index) {
-    //     console.log('column add');
-    //     this.renderColumn(column, index);
-    // }
-
     updateColumn(columnIndex, column) {
         const targetColumn = document.querySelector(`[data-column-id="${columnIndex}"]`);
         targetColumn.querySelector('.column-body').remove();
@@ -128,17 +120,5 @@ export default class ColumnView {
 
     addHandler(column) {
         column.addEventListener('click', this.handler);
-        // const columnsEl = this.container.getElementsByClassName('column-container');
-        // [...columnsEl].forEach((columnEl) => {
-        //     columnEl.addEventListener('click', handler);
-        // });
-    }
-
-    removeHandler() {
-        const columnsEl = this.container.getElementsByClassName('column-container');
-        [...columnsEl].forEach((columnEl) => {
-            if (columnEl.dataset.columnId) columnEl.removeEventListener('click', this.handler);
-        });
-        // column.removeEventListener('click', this.handler);
     }
 }
