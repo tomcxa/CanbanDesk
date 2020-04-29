@@ -60,17 +60,18 @@ export default class AppModel {
         const prevItem = column.items.splice(itemIdx, 1);
         const targetClmn = (sourceColumn === targetColumn) ? column : this._columns[targetColumn];
         if (siblingItemIdx) {
-            targetClmn.items.splice(siblingItemIdx, 0, prevItem);
+            targetClmn.items.splice(siblingItemIdx, 0, prevItem[0]);
         } else {
             targetClmn.items = targetClmn.items ? targetClmn.items : [];
-            targetClmn.items.push(prevItem);
+            targetClmn.items.push(prevItem[0]);
         }
         this.swapItemEvent.notify(sourceColumn, targetColumn);
         this.updateLocalMemory();
     }
 
     updateLocalMemory() {
-        localStorage.setItem('columns', JSON.stringify(this._columns));
+        localStorage.clear();
+        localStorage.setItem('columns', JSON.stringify(this.columns));
     }
 
     readLocalMemory() {

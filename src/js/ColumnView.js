@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-underscore-dangle */
-import dragula from 'dragula/dragula';
+import dragula from './dragula';
 
 export default class ColumnView {
     constructor(container) {

@@ -67,13 +67,13 @@ export default class Presenter {
     dropHandler(event) {
         if (event.type === 'mouseup' && event.target.closest('.card')) {
             const data = this.view.drake.dataForModel;
-            const { item, target, source, currentSibling } = data;
-            if (!item) return;
-            const itemIdx = item.dataset.cardId;
-            if (!source.closest('.column-container')) return;
-            const sourceColumn = source.closest('.column-container').dataset.columnId;
-            const targetColumn = target.closest('.column-container').dataset.columnId;
-            const siblingItemIdx = currentSibling ? currentSibling.dataset.cardId : null;
+            // const { item, target, source, currentSibling } = data;
+            if (!data.item) return;
+            const itemIdx = data.item.dataset.cardId;
+            if (!data.source.closest('.column-container')) return;
+            const sourceColumn = data.source.closest('.column-container').dataset.columnId;
+            const targetColumn = data.target.closest('.column-container').dataset.columnId;
+            const siblingItemIdx = data.currentSibling ? data.currentSibling.dataset.cardId : null;
             this.model.swapItem(itemIdx, sourceColumn, targetColumn, siblingItemIdx);
         }
     }
