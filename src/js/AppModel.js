@@ -1,47 +1,83 @@
 /* eslint-disable no-underscore-dangle */
 import Event from './Event';
 
-export default class Model {
+export default class AppModel {
     constructor() {
         this._columns = [];
-        this.readLocalMemoryEvent = new Event();
-        this.addDataEvent = new Event();
+        // this.readLocalMemoryEvent = new Event();
+        this.addColumnEvent = new Event();
+        this.removeColumnEvent = new Event();
+        this.addItemEvent = new Event();
         this.swapItemEvent = new Event();
         this.removeItemEvent = new Event();
+
+        this.readLocalMemory();
     }
 
-    setData() {
-        localStorage.setItem('columns', JSON.stringify([{ title: 'Column title', id: 1, items: ['Lorem adjasjda asdnadjakda kskd', 'asdadadadadad'] },
-            { title: 'Column title', id: 2, items: ['Lorem adjasjda asdnadjakda kskd', 'asdadadadadad'] }]));
+    get columns() {
+        return [...this._columns];
     }
 
-    getData() {
-        return this._columns;
+    getColumn(index) {
+        return this._columns[index];
     }
 
-    addData(data) {
-        this._columns.push(data);
-        this.addDataEvent.notify();
+    get length() {
+        return this._columns.length;
+    }
+
+    addColumn(column) {
+        this._columns.push(column);
+        this.addColumnEvent.notify(column, this.length - 1);
+        this.updateLocalMemory();
+    }
+
+    removeColumn(index) {
+        this._columns.splice(index, 1);
+        this.removeColumnEvent.notify(this.columns);
+        this.updateLocalMemory();
+    }
+
+    addItem(columnIndex, text) {
+        const column = this._columns[columnIndex];
+        if (!column.items) {
+            column.items = [text];
+        } else {
+            column.items.push(text);
+        }
+        this.addItemEvent.notify(columnIndex);
+        this.updateLocalMemory();
     }
 
     removeItem(columnIndex, itemIndex) {
         const { items } = this.columns[columnIndex];
         items.splice(itemIndex, 1);
-        this.removeItemEvent.notify();
+        this.removeItemEvent.notify(columnIndex);
+        this.updateLocalMemory();
     }
 
-    swapItem(columnId, prevPosition, newPosition) {
-        const column = this._columns[columnId];
-        const prevItem = column.items.splice(prevPosition, 1);
-        column.items.splice(newPosition, 0, prevItem);
-        this.swapItemEvent.notify();
+    swapItem(itemIdx, sourceColumn, targetColumn, siblingItemIdx) {
+        const column = this._columns[sourceColumn];
+        const prevItem = column.items.splice(itemIdx, 1);
+        const targetClmn = (sourceColumn === targetColumn) ? column : this._columns[targetColumn];
+        if (siblingItemIdx) {
+            targetClmn.items.splice(siblingItemIdx, 0, prevItem);
+        } else {
+            targetClmn.items = targetClmn.items ? targetClmn.items : [];
+            targetClmn.items.push(prevItem);
+        }
+        this.swapItemEvent.notify(sourceColumn, targetColumn);
+        this.updateLocalMemory();
     }
 
-    localMemory() {
+    updateLocalMemory() {
+        localStorage.setItem('columns', JSON.stringify(this._columns));
+    }
+
+    readLocalMemory() {
         const localData = localStorage.getItem('columns');
         if (localData) {
-            this.columns = JSON.parse(localData);
-            this.readLocalMemoryEvent.notify();
+            this._columns = JSON.parse(localData);
         }
     }
 }

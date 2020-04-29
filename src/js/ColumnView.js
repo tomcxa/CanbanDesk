@@ -1,28 +1,34 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-underscore-dangle */
+import dragula from 'dragula/dragula';
+// import dnd from './draganddrop';
+
 export default class ColumnView {
-    constructor(container, columns) {
+    constructor(container) {
         this.container = container;
-        this.columns = columns;
-        this.init();
+        this.drake = dragula({ revertOnSpill: true });
+        // this.columns = columns;
+        // this.init();
     }
 
-    init() {
+    init(columns = [], handler, dndHandler) {
+        document.addEventListener('mouseup', dndHandler);
+        this.handler = handler;
         this.initColumn = this._createInitColumn();
-        this.renderColumns(this.columns);
-        this.columnBody = this.container.querySelector('.column-body');
-        this.addColumnBtn = this.container.querySelector('[data-btn-type="addcolumn"]');
-        this.addCardBtn = this.container.querySelector('[data-btn-type="addcard"]');
-        this.removeColumnBtn = this.container.querySelector('[data-btn-type="removecolumn"]');
-        this.removeCardBtns = this.container.getElementsByAttr
+        this.renderColumns(columns);
+        this.columnsEl = this.container.getElementsByClassName('column-container');
+    }
+
+    updateDnd() {
+        this.drake.containers = [...this.container.getElementsByClassName('column-body')];
     }
 
     _initColumnHTML() {
         return `
         <footer class="column-footer">
-            <button class="btn btn-add" data-btn-type="addcolumn">
-                <span class="custom-ico add rounded thick"></span>
-                <span>Add new columns</span>
+            <button class="btn btn-add" data-btn-type="addcolumnform">
+                <span class="custom-ico add rounded thick" data-btn-type="addcolumnform"></span>
+                <span class="text" data-btn-type="addcolumnform">Add new columns</span>
             </button>
         </footer>`;
     }
@@ -33,39 +39,40 @@ export default class ColumnView {
         initColumnContainer.classList.add('column-container');
         initColumnContainer.dataset.type = 'init';
         this.container.appendChild(initColumnContainer);
+        this.addHandler(initColumnContainer, this.handler);
         return initColumnContainer;
     }
 
     _columnHTML(column) {
-        const header = `
+        const cplumnHeader = `
             <header class="column-header">
                 <h2 class="column-title">${column.title}</h2>
                 <button type="button" class="btn btn-close" data-btn-type="removecolumn">
-                    <span class="custom-ico close rounded thick"></span>
+                    <span class="custom-ico close rounded thick" data-btn-type="removecolumn"></span>
                 </button>
             </header>`;
-        const footer = `
+        const columnFooter = `
             <footer class="column-footer">
-                <button class="btn btn-add" data-btn-type="addcard">
-                    <span class="custom-ico add rounded thick"></span>
-                    <span>Add new card</span>
+                <button class="btn btn-add" data-btn-type="addcardform">
+                    <span data-btn-type="addcardform" class="custom-ico add rounded thick"></span>
+                    <span data-btn-type="addcardform">Add new card</span>
                 </button>
             </footer>`;
-        const body = this._cardsHTML(column.items);
-        return header + body + footer;
+        const columnBody = this._cardsHTML(column);
+        return cplumnHeader + columnBody + columnFooter;
     }
 
-    _cardsHTML(items) {
+    _cardsHTML(column) {
         let cards = '';
-        if (items.length) {
-            items.forEach((item, index) => {
+        if (column.items && column.items.length) {
+            column.items.forEach((item, index) => {
                 cards += `
-                    <div class="card">
+                    <div class="card" data-card-id="${index}">
                         <p>
                             ${item}
                         </p>
                         <button type="button" class="btn btn-close" data-btn-type="removecard">
-                            <span class="custom-ico close rounded thick"></span>
+                            <span class="custom-ico close rounded thick" data-btn-type="removecard"></span>
                         </button>
                     </div>`;
             });
@@ -74,52 +81,64 @@ export default class ColumnView {
         return body;
     }
 
-    renderColumns(columns) {
+    renderColumn(column, index) {
         this.initColumn.remove();
-        columns.forEach((column, index) => {
-            const columnContainer = document.createElement('section');
-            columnContainer.classList.add('column-container');
-            columnContainer.dataset.columnId = index;
-            const children = this._columnHTML(column);
-            columnContainer.insertAdjacentHTML('beforeend', children);
-            this.container.appendChild(columnContainer);
-        });
+        const columnContainer = document.createElement('section');
+        columnContainer.classList.add('column-container');
+        columnContainer.dataset.columnId = index;
+        const children = this._columnHTML(column);
+        columnContainer.insertAdjacentHTML('beforeend', children);
+        this.container.appendChild(columnContainer);
+        this.addHandler(columnContainer, this.handler);
         this.container.appendChild(this.initColumn);
+        this.updateDnd();
     }
 
-    addCard(text) {
-        const card = `
-            <div class="card">
-                <p>
-                    ${text}
-                </p>
-                <button type="button" class="btn btn-close" data-btn-type="removecard">
-                    <span class="custom-ico close rounded thick"></span>
-                </button>
-            </div>`;
-        this.columnBody.insertAdjacentHTML('afterbegin', card);
+    renderColumns(columns = []) {
+        this.container.innerHTML = '';
+        this.container.appendChild(this.initColumn);
+        columns.forEach((column, index) => {
+            this.renderColumn(column, index);
+        });
     }
 
     removeCard(cardEl) {
         cardEl.remove();
     }
 
-    addColumn() {
-        this.initColumn.remove();
+    // addColumn(column, index) {
+    //     console.log('column add');
+    //     this.renderColumn(column, index);
+    // }
 
-        this.container.appendChild(this.initColumn);
-    }
-
-    updateColumn(columnIndex, newCards) {
-        const updatable = document.querySelector(`[data-column-index="${columnIndex}"]`);
-        updatable.innerHTML = this._cardsHTML(newCards);
-
+    updateColumn(columnIndex, column) {
+        const targetColumn = document.querySelector(`[data-column-id="${columnIndex}"]`);
+        targetColumn.querySelector('.column-body').remove();
+        const header = targetColumn.querySelector('.column-header');
+        header.insertAdjacentHTML('afterend', this._cardsHTML(column));
+        this.updateDnd();
     }
 
     removeColumn(columnIndex) {
-        this.initColumn.remove();
-        const removable = document.querySelector(`[data-column-index="${columnIndex}"]`);
+        // this.initColumn.remove();
+        const removable = document.querySelector(`[data-column-id="${columnIndex}"]`);
         removable.remove();
-        this.container.appendChild(this.initColumn);
+        // this.container.appendChild(this.initColumn);
+    }
+
+    addHandler(column) {
+        column.addEventListener('click', this.handler);
+        // const columnsEl = this.container.getElementsByClassName('column-container');
+        // [...columnsEl].forEach((columnEl) => {
+        //     columnEl.addEventListener('click', handler);
+        // });
+    }
+
+    removeHandler() {
+        const columnsEl = this.container.getElementsByClassName('column-container');
+        [...columnsEl].forEach((columnEl) => {
+            if (columnEl.dataset.columnId) columnEl.removeEventListener('click', this.handler);
+        });
+        // column.removeEventListener('click', this.handler);
     }
 }

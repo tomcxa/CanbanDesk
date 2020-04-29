@@ -8,9 +8,9 @@ export default class Event {
         this.listeners.push(listener);
     }
 
-    notify(args) {
+    notify(...args) {
         for (let i = 0; i < this.listeners.length; i += 1) {
-            this.listeners[i](args);
+            this.listeners[i](...args);
         }
     }
 }
