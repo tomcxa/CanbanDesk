@@ -121,4 +121,12 @@ export default class ColumnView {
     addHandler(column) {
         column.addEventListener('click', this.handler);
     }
+
+    hide(el) {
+        el.classList.add('hidden');
+    }
+
+    show(el) {
+        el.classList.remove('hidden');
+    }
 }

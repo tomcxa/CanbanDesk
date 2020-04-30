@@ -23,18 +23,29 @@ export default class Presenter {
         event.preventDefault();
         const { btnType } = event.target.dataset;
         const { columnId } = event.currentTarget.dataset;
+        if (btnType === 'cancel') {
+            const formEl = event.currentTarget.querySelector('form');
+            const hideEl = event.currentTarget.querySelector('.column-footer');
+            formEl.remove();
+            this.view.show(hideEl);
+        }
         // обработчик для добавления новой колонки
         if (btnType === 'addcolumnform') {
+            const hideEl = event.target.closest('.column-footer');
+            this.view.hide(hideEl);
             const form = new Forms(event.currentTarget);
             form.bindToDOM('addcolumn');
+            form.focus();
         }
 
         if (btnType === 'addcolumn') {
             const formEl = event.currentTarget.querySelector('form');
+            const hideEl = event.currentTarget.querySelector('.column-footer');
             const inputEl = formEl.elements[0];
             if (inputEl.value.trim() === '') return;
             this.model.addColumn({ title: inputEl.value.trim() });
             formEl.remove();
+            this.view.show(hideEl);
         }
 
         // обработчик для удаления колонки
@@ -44,16 +55,21 @@ export default class Presenter {
 
         // обработчик для добавления каточки в колонку
         if (btnType === 'addcardform') {
+            const hideEl = event.target.closest('.column-footer');
+            this.view.hide(hideEl);
             const form = new Forms(event.currentTarget);
             form.bindToDOM('addcard');
+            form.focus();
         }
 
         if (btnType === 'addcard') {
+            const hideEl = event.currentTarget.querySelector('.column-footer');
             const formEl = event.currentTarget.querySelector('form');
             const inputEl = formEl.elements[0];
             if (inputEl.value.trim() === '') return;
             this.model.addItem(columnId, inputEl.value.trim());
             formEl.remove();
+            this.view.show(hideEl);
         }
 
         // обработчик для удаления карточки из колонки
@@ -67,7 +83,6 @@ export default class Presenter {
     dropHandler(event) {
         if (event.type === 'mouseup' && event.target.closest('.card')) {
             const data = this.view.drake.dataForModel;
-            // const { item, target, source, currentSibling } = data;
             if (!data.item) return;
             const itemIdx = data.item.dataset.cardId;
             if (!data.source.closest('.column-container')) return;
